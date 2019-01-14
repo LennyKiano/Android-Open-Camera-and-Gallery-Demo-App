@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="10"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/galleryImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="4dp"
+        android:layout_weight="7"
+
+        />
+
+
+    <Button
+        android:id="@+id/openCameraButton"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/open_camera"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/openGalleryButton"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@color/colorPrimary"
+        android:text="@string/get_photo"
+        android:textColor="@android:color/white" />
+
+</LinearLayout>
