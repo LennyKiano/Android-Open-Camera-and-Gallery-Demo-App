@@ -1,12 +1,57 @@
 package com.leonkianoapps.leonk.opengallerydemo;
 
-public class MySingleton {
-    private static final MySingleton ourInstance = new MySingleton();
+import android.content.Context;
 
-    public static MySingleton getInstance() {
-        return ourInstance;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+
+    public class MySingleton {
+
+        private  static  MySingleton MInstance;   //instance of class
+        private RequestQueue requestQueue;
+        private static Context mCtx;
+
+
+        private MySingleton(Context context){
+
+            mCtx=context;
+            requestQueue=getRequestQueue();
+
+
+        }
+
+
+
+
+        public RequestQueue getRequestQueue(){
+
+            if(requestQueue==null){
+
+                requestQueue= Volley.newRequestQueue(mCtx.getApplicationContext());
+
+            }
+
+            return requestQueue;
+        }
+
+
+        public static  synchronized MySingleton getInstance(Context context){
+
+            if(MInstance==null){
+
+                MInstance= new MySingleton(context);
+            }
+            return MInstance;
+        }
+
+        public<T> void  addToRequest(Request<T> request){
+
+            requestQueue.add(request);
+
+        }
+
+
     }
 
-    private MySingleton() {
-    }
-}
+

@@ -17,15 +17,30 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
+import android.view.textclassifier.TextLinks;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;  // Add this import manually for getExternalStoragePublicDirectory in order to store photo to the public storage
 
@@ -44,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
 
     CoordinatorLayout mainCoordinatorLayout;
 
+    private String uploadURL = "http://192.168.100.8/openGalleryDemo/uploadImage.php";
+
+    Bitmap uploadBitmap;
+
+    int numberImage = 1;
+
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mainCoordinatorLayout = findViewById(R.id.coordinatorMainLayout);
+
+        progressBar = findViewById(R.id.uploadingImageProgressBar);
 
         imageView = findViewById(R.id.galleryImageView);
         galleryButton = findViewById(R.id.openGalleryButton);
@@ -79,8 +103,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                saveOnline();
+                if(imageView.getDrawable()==null){
 
+                    Toast.makeText(getApplicationContext(),"Please take a photo or select from the gallery",Toast.LENGTH_LONG).show();
+
+                }else {
+
+                    uploadImage();
+
+                }
             }
         });
 
@@ -246,9 +277,9 @@ public class MainActivity extends AppCompatActivity {
 
             try {
 
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                uploadBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
 
-                imageView.setImageBitmap(bitmap);   //setting the imageView with the photo from the gallery
+                imageView.setImageBitmap(uploadBitmap);   //setting the imageView with the photo from the gallery
 
 
             } catch (IOException e) {
@@ -257,9 +288,9 @@ public class MainActivity extends AppCompatActivity {
 
         } else if (requestCode == OPEN_CAMERA) {  //For the camera intent
 
-            Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath);   //path of the photo file used to create a bitmap
+             uploadBitmap = BitmapFactory.decodeFile(mCurrentPhotoPath);   //path of the photo file used to create a bitmap
 
-            imageView.setImageBitmap(bitmap);  //setting the imageView with the photo from the camera
+            imageView.setImageBitmap(uploadBitmap);  //setting the imageView with the photo from the camera
 
             galleryAddPic();   // Adding the picture from the camera to the device gallery
 
@@ -283,9 +314,13 @@ public class MainActivity extends AppCompatActivity {
         this.sendBroadcast(mediaScanIntent);
     }
 
-    private void saveOnline() {
+    private void saveOnline(String response) {
 
-        Snackbar snackbar = Snackbar.make(mainCoordinatorLayout,"The photo was saved online,check backend to confirm",Snackbar.LENGTH_LONG)
+
+        progressBar.setVisibility(View.GONE);
+
+        Snackbar snackbar = Snackbar.make(mainCoordinatorLayout,response,Snackbar.LENGTH_LONG)
+                                    .setDuration(5000)
                                     .setAction("OKAY", new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
@@ -294,6 +329,71 @@ public class MainActivity extends AppCompatActivity {
                                     });
         snackbar.setActionTextColor(Color.CYAN);
         snackbar.show();
+    }
+
+    private void uploadImage(){
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, uploadURL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                //Server response is in form of a JsonObject
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject(response);
+
+                    String serveResponse = jsonObject.getString("response");
+
+                    saveOnline(serveResponse);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }) //Request Body
+        {
+
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+
+               Map<String,String> params = new HashMap<>();
+
+               String imageName = "image"+String.valueOf(numberImage);
+               numberImage++;
+
+
+                params.put("name",imageName);
+                params.put("image",imageToString(uploadBitmap));
+
+                return params;
+            }
+        } ;
+
+        MySingleton.getInstance(MainActivity.this).addToRequest(stringRequest);
+
+    }
+
+    //Converting image bitmap into string
+
+    private String imageToString(Bitmap bitmap){
+
+        ByteArrayOutputStream byteArrayOutputStream =new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArrayOutputStream);
+        byte[] imgBytes = byteArrayOutputStream.toByteArray();
+
+
+
+        return Base64.encodeToString(imgBytes,Base64.DEFAULT);
     }
 
 }
