@@ -5,12 +5,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,12 +35,14 @@ import static android.os.Environment.getExternalStoragePublicDirectory;  // Add 
 public class MainActivity extends AppCompatActivity {
 
     ImageView imageView;
-    Button galleryButton, cameraButton;
+    Button galleryButton, cameraButton,savePhotoOnline;
 
     private static int OPEN_GALLERY = 1;
     private static int OPEN_CAMERA = 20;
 
     String mCurrentPhotoPath;
+
+    CoordinatorLayout mainCoordinatorLayout;
 
 
     @Override
@@ -45,9 +50,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mainCoordinatorLayout = findViewById(R.id.coordinatorMainLayout);
+
         imageView = findViewById(R.id.galleryImageView);
         galleryButton = findViewById(R.id.openGalleryButton);
         cameraButton = findViewById(R.id.openCameraButton);
+
+        savePhotoOnline = findViewById(R.id.saveOnlineButton);
 
         galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,6 +72,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 openCamera();
+            }
+        });
+
+        savePhotoOnline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                saveOnline();
+
             }
         });
 
@@ -264,4 +282,18 @@ public class MainActivity extends AppCompatActivity {
 
         this.sendBroadcast(mediaScanIntent);
     }
+
+    private void saveOnline() {
+
+        Snackbar snackbar = Snackbar.make(mainCoordinatorLayout,"The photo was saved online,check backend to confirm",Snackbar.LENGTH_LONG)
+                                    .setAction("OKAY", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+
+                                        }
+                                    });
+        snackbar.setActionTextColor(Color.CYAN);
+        snackbar.show();
+    }
+
 }
