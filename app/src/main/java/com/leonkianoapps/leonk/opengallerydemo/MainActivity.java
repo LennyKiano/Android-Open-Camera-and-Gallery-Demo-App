@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
                 // Now user should be able to access the Camera
-                
+
                 getCameraPhoto();
 
             } else {
