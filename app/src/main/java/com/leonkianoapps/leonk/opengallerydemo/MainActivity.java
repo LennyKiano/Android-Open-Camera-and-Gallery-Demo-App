@@ -1,11 +1,14 @@
 package com.leonkianoapps.leonk.opengallerydemo;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -108,8 +111,19 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Please take a photo or select from the gallery",Toast.LENGTH_LONG).show();
 
                 }else {
+                             //checking if there is active internet connection
+                            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-                    uploadImage();
+                            if(activeNetworkInfo!=null && activeNetworkInfo.isConnected()){
+
+                                uploadImage();
+
+                            }else {
+
+                                snackResponse("Make sure you have active internet connection");
+
+                            }
 
                 }
             }
@@ -314,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
         this.sendBroadcast(mediaScanIntent);
     }
 
-    private void saveOnline(String response) {
+    private void snackResponse(String response) {
 
 
         progressBar.setVisibility(View.GONE);
@@ -347,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
 
                     String serveResponse = jsonObject.getString("response");
 
-                    saveOnline(serveResponse);
+                    snackResponse(serveResponse);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
